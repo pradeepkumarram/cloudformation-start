@@ -1,0 +1,46 @@
+Parameters:
+  NameoftheService:
+    Description: "Name of the Service"
+    Type: String
+  KeyName:
+    Description: "Name of exiting keypair's"
+    Type: AWS::EC2::KeyPair::KeyName
+Mappings:
+  MyRegionMapping:
+    us-east-1:
+      AMI: ami-08f3d892de259504d
+    us-west-2:
+      AMI: ami-0b1e2eeb33ce3d66f
+    us-west-1:
+      AMI: 123
+Resources:
+  MyEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId:
+        Fn::FindInMap:
+          - MyRegionMapping
+          - !Ref AWS::Region
+          - AMI
+
+      Tags:
+        - Key: Name
+          Value: !Ref NameoftheService
+      KeyName: !Ref KeyName
+      SecurityGroups:
+        - !Ref MySecurityGroup
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via 22
+      SecurityGroupIngress:
+        IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+Outputs:
+  DNSNAME:
+    Value: !GetAtt
+     - MyEc2Instance
+     - PublicDnsName
